@@ -18,7 +18,8 @@ setuptools.setup(
         'tests',
     ]),
     install_requires=[
-
+        # for iolanta.authorizer default implementation
+        'pycrypto'
     ],
     extras_require={
         'dev': [
