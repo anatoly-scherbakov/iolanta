@@ -1,8 +1,24 @@
 import dataclasses
 from enum import Enum
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Set
 
 from uuid import uuid4
+
+
+class MissingVertex(Exception):
+    def __init__(self, vertex_id: str):
+        self.vertex_id = vertex_id
+
+    def __str__(self):
+        return f'Vertex with id {self.vertex_id} not found.'
+
+
+class MissingEdge(Exception):
+    def __init__(self, edge_id: str):
+        self.edge_id = edge_id
+
+    def __str__(self):
+        return f'Edge with id {self.edge_id} not found.'
 
 
 def uuid():
@@ -40,8 +56,8 @@ class Commit:
 
 
 @dataclasses.dataclass(frozen=True)
-class Graph:
-    name: str
+class Space:
+    name: str = 'Untitled Space'
 
     vertexes: List[Vertex] = dataclasses.field(default_factory=list)
     edges: List[Edge] = dataclasses.field(default_factory=list)
@@ -50,36 +66,46 @@ class Graph:
     id: str = dataclasses.field(default_factory=uuid)
 
     def vertex_by_id(self, vertex_id: str):
-        v, = [v for v in self.vertexes if v.id == vertex_id]
-        return v
+        try:
+            v, = [v for v in self.vertexes if v.id == vertex_id]
+        except ValueError as err:
+            raise MissingVertex(vertex_id) from err
+        else:
+            return v
 
     def edge_by_id(self, edge_id: str):
-        e, = [e for e in self.edges if e.id == edge_id]
-        return e
+        try:
+            e, = [e for e in self.edges if e.id == edge_id]
+        except ValueError as err:
+            raise MissingEdge(edge_id) from err
+        else:
+            return e
 
-    def adjacent_edges(self, vertex: Vertex):
-        return [
+    def adjacent_edges(self, vertex: Vertex) -> Set[Vertex]:
+        return {
             edge for edge in self.edges
             if (
                 edge.start == vertex
                 or edge.end == vertex
             )
-        ]
+        }
 
-    def add_vertex(self, name: str):
-        self.vertexes.append(Vertex(name=name))
+    def add_vertex(self, name: str) -> Vertex:
+        vertex = Vertex(name=name)
+        self.vertexes.append(vertex)
+        return vertex
 
-    def add_edge(self, name: str, start: Vertex, end: Vertex):
+    def add_edge(self, start: Vertex, end: Vertex, name: str) -> Edge:
         assert start in self.vertexes
         assert end in self.vertexes
-        self.edges.append(Edge(
-            start=start,
-            end=end,
-            name=name
-        ))
+
+        edge = Edge(start=start, end=end, name=name)
+        self.edges.append(edge)
+
+        return edge
 
     def remove_edge(self, edge_id: str):
-        edge, = filter(lambda e: e.id == edge_id, self.edges)
+        edge = self.edge_by_id(edge_id)
         self.edges.remove(edge)
 
     def remove_vertex(self, vertex_id: str):
