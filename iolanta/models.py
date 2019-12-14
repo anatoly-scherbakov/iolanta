@@ -1,7 +1,8 @@
 import dataclasses
+import json
 import time
 from enum import Enum
-from typing import Optional, Union, List, Set
+from typing import Optional, Union, List, Set, Dict
 
 from uuid import uuid4
 
@@ -55,9 +56,14 @@ class BaseCommit:
     # Hash of this commit
     id: str
 
-    previous_commit: Optional['BaseCommit']
+    previous_commit_id: Optional[str]
 
     timestamp: int
+
+    def signed_data(self) -> str:
+        data = dataclasses.asdict(self)
+        del data['id']
+        return json.dumps(data)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -96,7 +102,21 @@ class RenameEdgeCommit(BaseCommit):
 
 @dataclasses.dataclass(frozen=True)
 class MergeCommit(BaseCommit):
-    merged_commit: BaseCommit
+    merged_commit_id: str
+
+
+class Authorizer(Dict[str, str]):
+    """
+    Essentially a database of users' public keys. Can verify that given
+    commit was indeed authored and signed by the user that it claims.
+
+    It is recommended to use a public blockchain as a backend for Authorizer.
+    """
+    def verify(self, commit: BaseCommit) -> bool:
+        if commit.user_id not in self:
+            return False
+
+        return False
 
 
 @dataclasses.dataclass(frozen=True)
@@ -106,6 +126,8 @@ class Space:
     vertexes: List[Vertex] = dataclasses.field(default_factory=list)
     edges: List[Edge] = dataclasses.field(default_factory=list)
     commit_log: List[BaseCommit] = dataclasses.field(default_factory=list)
+
+    authorizer: Authorizer = dataclasses.field(default_factory=Authorizer)
 
     id: str = dataclasses.field(default_factory=uuid)
 
