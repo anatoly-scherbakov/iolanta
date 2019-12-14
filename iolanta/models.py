@@ -1,4 +1,5 @@
 import dataclasses
+import time
 from enum import Enum
 from typing import Optional, Union, List, Set
 
@@ -47,12 +48,55 @@ class Edge:
 
 
 @dataclasses.dataclass(frozen=True)
-class Commit:
-    previous_commit: Optional['Commit']
-    content: Union[Vertex, Edge]
-    operation: Operation = Operation.CREATE
+class BaseCommit:
+    # Who is committing?
+    user_id: str
 
-    id: str = dataclasses.field(default_factory=uuid)
+    # Hash of this commit
+    id: str
+
+    previous_commit: Optional['BaseCommit']
+
+    timestamp: int
+
+
+@dataclasses.dataclass(frozen=True)
+class CreateVertexCommit(BaseCommit):
+    name: str
+
+
+@dataclasses.dataclass(frozen=True)
+class CreateEdgeCommit(BaseCommit):
+    name: str
+    start_id: str
+    end_id: str
+
+
+@dataclasses.dataclass(frozen=True)
+class RemoveVertexCommit(BaseCommit):
+    vertex_id: str
+
+
+@dataclasses.dataclass(frozen=True)
+class RemoveEdgeCommit(BaseCommit):
+    edge_id: str
+
+
+@dataclasses.dataclass(frozen=True)
+class RenameVertexCommit(BaseCommit):
+    vertex_id: str
+    name: str
+
+
+@dataclasses.dataclass(frozen=True)
+class RenameEdgeCommit(BaseCommit):
+    edge_id: str
+    name: str
+
+
+@dataclasses.dataclass(frozen=True)
+class MergeCommit(BaseCommit):
+    merged_commit: BaseCommit
 
 
 @dataclasses.dataclass(frozen=True)
@@ -61,7 +105,7 @@ class Space:
 
     vertexes: List[Vertex] = dataclasses.field(default_factory=list)
     edges: List[Edge] = dataclasses.field(default_factory=list)
-    commit_log: List[Commit] = dataclasses.field(default_factory=list)
+    commit_log: List[BaseCommit] = dataclasses.field(default_factory=list)
 
     id: str = dataclasses.field(default_factory=uuid)
 

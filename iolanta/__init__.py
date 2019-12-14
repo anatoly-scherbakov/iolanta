@@ -1,1 +1,1 @@
-from .models import Commit
+from .models import BaseCommit
