@@ -1,6 +1,7 @@
 import pytest
 
-from iolanta.models import Space, MissingVertex, MissingEdge
+from iolanta.models import Space
+from iolanta.exceptions import MissingVertex, MissingEdge
 
 
 def test_create_vertex_id():

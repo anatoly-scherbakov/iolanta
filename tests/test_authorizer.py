@@ -1,6 +1,7 @@
 import time
 
-from iolanta.models import Authorizer, CreateVertexCommit
+from iolanta.commits import CreateVertexCommit
+from iolanta.authorizer import Authorizer
 
 
 def test_verify_false():

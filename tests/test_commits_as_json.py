@@ -1,10 +1,11 @@
 import json
 
+import iolanta.commits
 from iolanta import models
 
 
 def test_create_vertex():
-    assert models.CreateVertexCommit(
+    assert iolanta.commits.CreateVertexCommit(
         id=...,
         name='John T. Kirk',
         previous_commit_id=None,
@@ -19,7 +20,7 @@ def test_create_vertex():
 
 
 def test_create_edge():
-    assert models.CreateEdgeCommit(
+    assert iolanta.commits.CreateEdgeCommit(
         id=...,
         name='John T. Kirk',
         previous_commit_id=None,
@@ -38,7 +39,7 @@ def test_create_edge():
 
 
 def test_remove_vertex():
-    assert models.RemoveVertexCommit(
+    assert iolanta.commits.RemoveVertexCommit(
         id=...,
         previous_commit_id='123',
         timestamp=0,
@@ -53,7 +54,7 @@ def test_remove_vertex():
 
 
 def test_remove_edge():
-    assert models.RemoveEdgeCommit(
+    assert iolanta.commits.RemoveEdgeCommit(
         id=...,
         previous_commit_id='123',
         timestamp=0,
@@ -68,7 +69,7 @@ def test_remove_edge():
 
 
 def test_merge():
-    assert models.MergeCommit(
+    assert iolanta.commits.MergeCommit(
         id=...,
         previous_commit_id='123',
         timestamp=0,

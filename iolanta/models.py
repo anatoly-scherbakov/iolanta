@@ -1,35 +1,15 @@
 import dataclasses
-import json
-import time
-from enum import Enum
-from typing import Optional, Union, List, Set, Dict
+from typing import List, Set
 
 from uuid import uuid4
 
-
-class MissingVertex(Exception):
-    def __init__(self, vertex_id: str):
-        self.vertex_id = vertex_id
-
-    def __str__(self):
-        return f'Vertex with id {self.vertex_id} not found.'
-
-
-class MissingEdge(Exception):
-    def __init__(self, edge_id: str):
-        self.edge_id = edge_id
-
-    def __str__(self):
-        return f'Edge with id {self.edge_id} not found.'
+from .commits import BaseCommit
+from .authorizer import Authorizer
+from .exceptions import MissingVertex, MissingEdge
 
 
 def uuid():
     return uuid4().hex
-
-
-class Operation(str, Enum):
-    CREATE = 'create'
-    DELETE = 'delete'
 
 
 @dataclasses.dataclass(frozen=True)
@@ -46,77 +26,6 @@ class Edge:
     end: Vertex
 
     id: str = dataclasses.field(default_factory=uuid)
-
-
-@dataclasses.dataclass(frozen=True)
-class BaseCommit:
-    # Who is committing?
-    user_id: str
-
-    # Hash of this commit
-    id: str
-
-    previous_commit_id: Optional[str]
-
-    timestamp: int
-
-    def signed_data(self) -> str:
-        data = dataclasses.asdict(self)
-        del data['id']
-        return json.dumps(data)
-
-
-@dataclasses.dataclass(frozen=True)
-class CreateVertexCommit(BaseCommit):
-    name: str
-
-
-@dataclasses.dataclass(frozen=True)
-class CreateEdgeCommit(BaseCommit):
-    name: str
-    start_id: str
-    end_id: str
-
-
-@dataclasses.dataclass(frozen=True)
-class RemoveVertexCommit(BaseCommit):
-    vertex_id: str
-
-
-@dataclasses.dataclass(frozen=True)
-class RemoveEdgeCommit(BaseCommit):
-    edge_id: str
-
-
-@dataclasses.dataclass(frozen=True)
-class RenameVertexCommit(BaseCommit):
-    vertex_id: str
-    name: str
-
-
-@dataclasses.dataclass(frozen=True)
-class RenameEdgeCommit(BaseCommit):
-    edge_id: str
-    name: str
-
-
-@dataclasses.dataclass(frozen=True)
-class MergeCommit(BaseCommit):
-    merged_commit_id: str
-
-
-class Authorizer(Dict[str, str]):
-    """
-    Essentially a database of users' public keys. Can verify that given
-    commit was indeed authored and signed by the user that it claims.
-
-    It is recommended to use a public blockchain as a backend for Authorizer.
-    """
-    def verify(self, commit: BaseCommit) -> bool:
-        if commit.user_id not in self:
-            return False
-
-        return False
 
 
 @dataclasses.dataclass(frozen=True)
